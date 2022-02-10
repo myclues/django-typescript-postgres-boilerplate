@@ -9,8 +9,13 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-
+import os
 from pathlib import Path
+from telnetlib import AUTHENTICATION
+
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "development")
+DEBUG = ENVIRONMENT != "prod"
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +30,7 @@ SECRET_KEY = 'django-insecure-*i(2g776w3dtr(7gn7r^=7o8h(kn38jck+8$qpn)w&!vmtku6r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -37,7 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'guardian',
+    'rest_framework',
+    # 'rest_framework_api_key', # when we need to do machine2machine auth w/ api key
 ]
+
+if ENVIRONMENT != "prod":
+    INSTALLED_APPS.append("drf_yasg")
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -50,6 +61,44 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'new_app.urls'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '[%(asctime)s] %(levelname)s|%(name)s|%(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        }
+    },
+    'handlers': {
+        'my_log_handler': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.environ.get("LOG_LOCATION"),
+            'maxBytes': 1024*1024*15, #15MB
+            'backupCount': 10,
+            'formatter': 'simple',
+        },
+        'console': {
+            'level': 'DEBUG' if ENVIRONMENT != "production" else 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['my_log_handler', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'new_app': {
+            'handlers': ['my_log_handler', 'console'],
+            'level': 'DEBUG' if ENVIRONMENT != "production" else 'INFO',
+            'propagate': True,
+        },
+    },
+}
 
 TEMPLATES = [
     {
@@ -68,7 +117,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'new_app.wsgi.application'
+ASGI_APPLICATION = 'new_app.asgi.application'
 
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend', # default
+    'guardian.backends.ObjectPermissionBackend',
+)
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases

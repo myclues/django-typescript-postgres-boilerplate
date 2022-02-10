@@ -35,7 +35,8 @@ services:
   ui:
     build:
       context: ui
-      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
     volumes:
       - ./ui:/code
     depends_on:

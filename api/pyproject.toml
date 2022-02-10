@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "dtp-boilerplate"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+Django = "^4.0.2"
+djangorestframework = "^3.13.1"
+djangorestframework-jwt = "^1.11.0"
+djangorestframework-api-key = "^2.1.0"
+django-cryptography = "^1.0"
+django-guardian = "^2.4.0"
+drf-yasg = "^1.20.0"
+uvicorn = "^0.17.4"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

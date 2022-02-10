@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import os
+import datetime
 from pathlib import Path
 from telnetlib import AUTHENTICATION
 
@@ -25,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-*i(2g776w3dtr(7gn7r^=7o8h(kn38jck+8$qpn)w&!vmtku6r'
+SECRET_KEY = 'django-insecure-*i(2g776w3dtr(7gn7r^=7o8h(kn38jck+8$qpn)w&!vmtku6r' if DEBUG else os.environ.get("DEPLOY_SECRET")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -81,7 +82,7 @@ LOGGING = {
             'formatter': 'simple',
         },
         'console': {
-            'level': 'DEBUG' if ENVIRONMENT != "production" else 'INFO',
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
@@ -94,7 +95,7 @@ LOGGING = {
         },
         'new_app': {
             'handlers': ['my_log_handler', 'console'],
-            'level': 'DEBUG' if ENVIRONMENT != "production" else 'INFO',
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': True,
         },
     },
@@ -124,13 +125,38 @@ AUTHENTICATION_BACKENDS = (
     'guardian.backends.ObjectPermissionBackend',
 )
 
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+}
+
+JWT_AUTH = {
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'new_app.jwtutils.jwt_response_handler',
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=7),
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_SECRET_KEY': os.environ.get("JWT_SECRET_KEY", SECRET_KEY)
+}
+
+CRYPTOGRAPHY_KEY = os.environ.get("CRYPTOGRAPHY_KEY", SECRET_KEY)
+
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get("POSTGRES_DB"),
+        "USER": os.environ.get("POSTGRES_USER"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
+        "HOST": "db",
+        "PORT": 5432,
     }
 }
 
@@ -169,7 +195,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = '/code/static'
+MEDIA_ROOT = '/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

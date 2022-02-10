@@ -8,6 +8,8 @@ services:
     ports:
       - "5432:5432"
     environment:
+      - POSTGRES_DB=appdata
+      - POSTGRES_USER=dbadmin
       - POSTGRES_PASSWORD=password
 
   api:
@@ -18,6 +20,8 @@ services:
     volumes:
       - ./api:/code
     environment:
+      - POSTGRES_DB=appdata
+      - POSTGRES_USER=dbadmin
       - POSTGRES_PASSWORD=password
       - LOG_LOCATION=/var/log/api.log
     depends_on:

@@ -2,15 +2,16 @@
 name = "dtp-boilerplate"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Mike Liu <mike@bearwavetech.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
 Django = "^4.0.2"
 djangorestframework = "^3.13.1"
-djangorestframework-jwt = "^1.11.0"
 djangorestframework-api-key = "^2.1.0"
+djangorestframework-simplejwt = "^5.0.0"
 django-cryptography = "^1.0"
+django-filter = "^21.1"
 django-guardian = "^2.4.0"
 drf-yasg = "^1.20.0"
 uvicorn = "^0.17.4"
